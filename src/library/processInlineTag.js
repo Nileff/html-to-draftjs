@@ -11,7 +11,8 @@ const inlineTags = {
 export default function processInlineTag(
   tag: string,
   node: Object,
-  currentStyle: Object
+  currentStyle: Object,
+  customStyleMap: ?Object
 ): Object {
   const styleToCheck = inlineTags[tag];
   let inlineStyle;
@@ -21,33 +22,51 @@ export default function processInlineTag(
     inlineStyle = currentStyle;
     const htmlElement = node;
     inlineStyle = inlineStyle.withMutations((style) => {
-      const color = htmlElement.style.color;
-      const backgroundColor = htmlElement.style.backgroundColor;
-      const fontSize = htmlElement.style.fontSize;
-      const fontFamily = htmlElement.style.fontFamily.replace(/^"|"$/g, '');
-      const fontWeight = htmlElement.style.fontWeight;
-      const textDecoration = htmlElement.style.textDecoration;
-      const fontStyle = htmlElement.style.fontStyle;
-      if (color) {
-        style.add(`color-${color.replace(/ /g, '')}`);
-      }
-      if (backgroundColor) {
-        style.add(`bgcolor-${backgroundColor.replace(/ /g, '')}`);
-      }
-      if (fontSize) {
-        style.add(`fontsize-${fontSize.replace(/px$/g, '')}`);
-      }
-      if (fontFamily) {
-        style.add(`fontfamily-${fontFamily}`);
-      }
-      if(fontWeight === 'bold'){
-        style.add(inlineTags.strong)
-      }
-      if(textDecoration === 'underline'){
-          style.add(inlineTags.ins)
-      }
-      if(fontStyle === 'italic'){
-          style.add(inlineTags.em)
+      const styleLength = htmlElement.style.length;
+      if (styleLength) {
+        let setCustom = false
+        if (customStyleMap) {
+          Object.entries(customStyleMap).forEach(([styleName: string, styleObj: Object]) => {
+            let allEq = true
+            Object.entries(styleObj).forEach(([key: string, val: any]) => {
+              allEq = allEq && htmlElement.style[key] === val.toString()
+            })
+            if (allEq) {
+              style.add(styleName)
+              setCustom = true
+            }
+          })
+        }
+        if (!setCustom) {
+          const color = htmlElement.style.color;
+          const backgroundColor = htmlElement.style.backgroundColor;
+          const fontSize = htmlElement.style.fontSize;
+          const fontFamily = htmlElement.style.fontFamily.replace(/^"|"$/g, '');
+          const fontWeight = htmlElement.style.fontWeight;
+          const textDecoration = htmlElement.style.textDecoration;
+          const fontStyle = htmlElement.style.fontStyle;
+          if (color) {
+            style.add(`color-${color.replace(/ /g, '')}`);
+          }
+          if (backgroundColor) {
+            style.add(`bgcolor-${backgroundColor.replace(/ /g, '')}`);
+          }
+          if (fontSize) {
+            style.add(`fontsize-${fontSize.replace(/px$/g, '')}`);
+          }
+          if (fontFamily) {
+            style.add(`fontfamily-${fontFamily}`);
+          }
+          if (fontWeight === 'bold') {
+            style.add(inlineTags.strong)
+          }
+          if (textDecoration === 'underline') {
+            style.add(inlineTags.ins)
+          }
+          if (fontStyle === 'italic') {
+            style.add(inlineTags.em)
+          }
+        }
       }
     }).toOrderedSet();
   }
