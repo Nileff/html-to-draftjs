@@ -29,7 +29,7 @@ export default function processInlineTag(
           Object.entries(customStyleMap).forEach(([styleName: string, styleObj: Object]) => {
             let allEq = true
             Object.entries(styleObj).forEach(([key: string, val: any]) => {
-              allEq = allEq && htmlElement.style[key] === val.toString()
+              allEq = allEq && (!htmlElement.style.hasOwnProperty(key) || htmlElement.style[key] === val.toString())
             })
             if (allEq) {
               style.add(styleName)
